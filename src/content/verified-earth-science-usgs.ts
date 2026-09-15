@@ -1,0 +1,211 @@
+import type { Question, QuestionProvenance } from '../domain/types.ts';
+import type { VerifiedContentBatch } from './catalog.ts';
+
+/**
+ * Faits indépendants de sciences de la Terre relus dans des ressources USGS.
+ * Une ligne correspond à une relation ou un mécanisme différent : aucune
+ * reformulation d'un même fait n'est utilisée pour gonfler le catalogue.
+ */
+const CHECKED_AT = '2026-09-15';
+const SOURCE = 'U.S. Geological Survey — Earth and water science resources';
+const LICENSE = 'USGS public domain (sauf indication contraire sur la page)';
+const METHOD = 'Relecture manuelle de l’énoncé, de la réponse et de l’explication dans la page USGS indiquée; fait stable et distinct, sans variante générée.';
+
+const URLS = {
+  interior: 'https://pubs.usgs.gov/gip/interior/',
+  tectonics: 'https://pubs.usgs.gov/gip/dynamic/dynamic.html',
+  earthquakes: 'https://www.usgs.gov/programs/earthquake-hazards/earthquake-facts',
+  volcanoes: 'https://www.usgs.gov/programs/volcano-hazards/volcanoes',
+  rocks: 'https://www.usgs.gov/programs/water-resources/science/rock-cycle',
+  waterCycle: 'https://www.usgs.gov/water-science-school/water-cycle',
+  groundwater: 'https://www.usgs.gov/water-science-school/science/groundwater-flow-and-water-cycle',
+  infiltration: 'https://www.usgs.gov/water-science-school/science/infiltration-and-water-cycle',
+  evapotranspiration: 'https://www.usgs.gov/water-science-school/science/evapotranspiration-and-water-cycle',
+  springs: 'https://www.usgs.gov/water-science-school/science/springs-and-water-cycle',
+} as const;
+
+type Row = readonly [
+  id: string,
+  question: string,
+  answer: string,
+  explanation: string,
+  difficulty: 1 | 2 | 3,
+  sourceUrl: string,
+];
+
+const rows: readonly Row[] = [
+  // Structure et matériaux de la Terre
+  ['earth-layer-crust', 'Quelle couche solide occupe la surface de la Terre ?', 'La croûte', 'La croûte est l’enveloppe rocheuse externe de la Terre, au-dessus du manteau.', 1, URLS.interior],
+  ['earth-layer-core', 'Comment s’appelle la partie centrale de la Terre ?', 'Le noyau', 'Le noyau est la région métallique profonde située sous le manteau.', 1, URLS.interior],
+  ['earth-core-outer-liquid', 'Quel état physique caractérise principalement le noyau externe ?', 'Liquide', 'Le noyau externe est une couche métallique liquide qui participe à la génération du champ magnétique.', 2, URLS.interior],
+  ['earth-core-inner-solid', 'Quel état physique caractérise principalement le noyau interne ?', 'Solide', 'Malgré sa très haute température, la pression y maintient le métal à l’état solide.', 2, URLS.interior],
+  ['earth-crust-oceanic-basalt', 'Quelle roche constitue une grande partie de la croûte océanique ?', 'Le basalte', 'La croûte océanique est majoritairement formée de roches basaltiques issues du volcanisme sous-marin.', 1, URLS.interior],
+  ['earth-crust-continental-granite', 'Quelle roche est typique d’une grande partie de la croûte continentale ?', 'Le granite', 'Les continents contiennent notamment des roches granitiques, moins denses que la croûte océanique.', 1, URLS.interior],
+  ['earth-lithosphere-definition', 'Comment appelle-t-on l’ensemble rigide formé de la croûte et du manteau supérieur ?', 'La lithosphère', 'La lithosphère constitue les plaques tectoniques rigides qui se déplacent sur une couche plus ductile.', 2, URLS.tectonics],
+  ['earth-asthenosphere-definition', 'Quelle couche ductile se trouve sous la lithosphère ?', 'L’asthénosphère', 'L’asthénosphère du manteau supérieur se déforme plus facilement et permet le déplacement des plaques.', 2, URLS.tectonics],
+  ['earth-mohorovicic-boundary', 'Comment s’appelle la limite entre la croûte et le manteau ?', 'La discontinuité de Mohorovičić', 'Le Moho est identifié par une variation des propriétés et de la vitesse des ondes sismiques.', 3, URLS.interior],
+  ['earth-seismic-p-waves', 'Quel type d’onde sismique arrive généralement en premier à une station ?', 'L’onde P', 'Les ondes P sont des ondes de compression et se propagent plus vite que les ondes S.', 1, URLS.interior],
+  ['earth-seismic-s-waves', 'Quel type d’onde sismique ne traverse pas un liquide ?', 'L’onde S', 'Les ondes S sont des ondes de cisaillement et ne se propagent pas dans un milieu liquide.', 2, URLS.interior],
+  ['earth-density-depth', 'Comment la densité moyenne des matériaux terrestres évolue-t-elle vers la profondeur ?', 'Elle augmente généralement', 'Les matériaux profonds, notamment métalliques, sont en moyenne plus denses que les roches de surface.', 2, URLS.interior],
+  ['earth-geothermal-heat', 'Quelle source d’énergie alimente une grande partie des processus géologiques internes ?', 'La chaleur interne de la Terre', 'La chaleur interne contribue à la convection et au mouvement des matériaux du manteau.', 1, URLS.interior],
+  ['earth-magnetic-field-core', 'Quelle région terrestre est à l’origine principale du champ magnétique global ?', 'Le noyau externe', 'Les mouvements du métal conducteur liquide du noyau externe entretiennent le champ magnétique.', 2, URLS.interior],
+  ['rock-igneous-definition', 'Comment se forme une roche ignée ?', 'Par solidification d’un magma ou d’une lave', 'Une roche ignée cristallise lorsque du matériau fondu refroidit et se solidifie.', 1, URLS.rocks],
+  ['rock-sedimentary-definition', 'Comment se forme généralement une roche sédimentaire ?', 'Par accumulation, compaction et cimentation de sédiments', 'Les sédiments déposés peuvent être compactés puis cimentés pour former une roche.', 1, URLS.rocks],
+  ['rock-metamorphic-definition', 'Comment se forme une roche métamorphique ?', 'Par transformation d’une roche préexistante sous l’effet de la chaleur et de la pression', 'Le métamorphisme modifie une roche sans la faire fondre complètement.', 1, URLS.rocks],
+  ['rock-cycle-change', 'Le cycle des roches permet-il à une roche de changer de famille ?', 'Oui', 'Les processus géologiques peuvent transformer une roche ignée, sédimentaire ou métamorphique en une autre.', 1, URLS.rocks],
+  ['mineral-definition', 'Quelle propriété caractérise un minéral ?', 'Une composition chimique et une structure cristalline définies', 'Un minéral naturel possède une composition et une organisation atomique caractéristiques.', 2, URLS.rocks],
+  ['mineral-crystal-order', 'Comment les atomes sont-ils organisés dans un cristal ?', 'De manière ordonnée et périodique', 'La structure cristalline correspond à un arrangement régulier des atomes ou ions.', 1, URLS.rocks],
+  ['mineral-mohs-hardness', 'Que mesure l’échelle de Mohs ?', 'La résistance d’un minéral à la rayure', 'L’échelle de Mohs compare la dureté relative des minéraux par des tests de rayure.', 1, URLS.rocks],
+  ['mineral-cleavage', 'Que décrit le clivage d’un minéral ?', 'La tendance à se casser selon des plans réguliers', 'Le clivage suit des plans de faiblesse liés à la structure cristalline.', 2, URLS.rocks],
+  ['mineral-fracture', 'Que décrit la fracture d’un minéral ?', 'La manière dont il se casse hors de plans de clivage', 'Une fracture est une cassure irrégulière ou particulière qui n’est pas un clivage.', 2, URLS.rocks],
+  ['rock-granite-igneous', 'À quelle famille appartient le granite ?', 'Aux roches ignées', 'Le granite est une roche magmatique qui cristallise en profondeur à partir d’un magma.', 1, URLS.rocks],
+  ['rock-basalt-igneous', 'À quelle famille appartient le basalte ?', 'Aux roches ignées', 'Le basalte se forme lorsque de la lave refroidit, souvent à la surface ou au fond de l’océan.', 1, URLS.rocks],
+  ['rock-sandstone-sedimentary', 'À quelle famille appartient le grès ?', 'Aux roches sédimentaires', 'Le grès est formé de grains de sable compactés et cimentés.', 1, URLS.rocks],
+  ['rock-limestone-sedimentary', 'À quelle famille appartient généralement le calcaire ?', 'Aux roches sédimentaires', 'Le calcaire se forme notamment par accumulation de carbonate de calcium ou de débris biologiques.', 1, URLS.rocks],
+  ['rock-marble-metamorphic', 'De quelle roche le marbre est-il une forme métamorphique ?', 'Du calcaire', 'Le calcaire recristallise sous l’effet de la chaleur et de la pression pour donner du marbre.', 2, URLS.rocks],
+  ['rock-slate-metamorphic', 'De quelle roche le schiste ardoisier peut-il dériver par métamorphisme ?', 'D’une roche argileuse', 'La pression et la chaleur transforment des sédiments argileux en ardoise.', 2, URLS.rocks],
+  ['rock-pumice-vesicular', 'Pourquoi la pierre ponce est-elle très poreuse ?', 'Parce que des bulles de gaz sont restées piégées dans la lave', 'Le refroidissement rapide d’une lave riche en gaz peut conserver de nombreuses cavités.', 2, URLS.rocks],
+  ['rock-obsidian-glass', 'Quelle texture caractérise l’obsidienne ?', 'Une texture vitreuse', 'La lave refroidit si vite que les cristaux n’ont pas le temps de se développer.', 2, URLS.rocks],
+
+  // Tectonique des plaques
+  ['tectonics-plates-move', 'Que déplacent les mouvements tectoniques ?', 'Des plaques lithosphériques', 'La tectonique décrit le déplacement lent de plaques rigides à la surface de la Terre.', 1, URLS.tectonics],
+  ['tectonics-divergent-boundary', 'Que font deux plaques à une limite divergente ?', 'Elles s’écartent', 'L’écartement permet la remontée de matériau chaud et la formation de nouvelle croûte.', 1, URLS.tectonics],
+  ['tectonics-convergent-boundary', 'Que font deux plaques à une limite convergente ?', 'Elles se rapprochent', 'Une convergence peut produire une subduction ou une collision continentale.', 1, URLS.tectonics],
+  ['tectonics-transform-boundary', 'Comment se déplacent deux plaques à une limite transformante ?', 'Elles coulissent horizontalement l’une par rapport à l’autre', 'Le mouvement latéral le long d’une faille transformante peut produire des séismes.', 2, URLS.tectonics],
+  ['tectonics-subduction-definition', 'Qu’est-ce que la subduction ?', 'L’enfoncement d’une plaque sous une autre', 'Une plaque, souvent océanique, plonge dans le manteau au niveau d’une limite convergente.', 1, URLS.tectonics],
+  ['tectonics-trench', 'Quelle structure profonde se forme souvent au-dessus d’une zone de subduction ?', 'Une fosse océanique', 'La flexion de la plaque qui plonge creuse une longue dépression du plancher océanique.', 2, URLS.tectonics],
+  ['tectonics-mid-ocean-ridge', 'Quelle structure marque souvent une limite divergente sous l’océan ?', 'Une dorsale médio-océanique', 'Du magma y forme progressivement de la nouvelle croûte océanique.', 1, URLS.tectonics],
+  ['tectonics-seafloor-spreading', 'Comment appelle-t-on la création de croûte océanique aux dorsales ?', 'L’expansion des fonds océaniques', 'La remontée de magma et son refroidissement écartent progressivement le plancher marin.', 1, URLS.tectonics],
+  ['tectonics-magnetic-stripes', 'Que révèlent les bandes magnétiques symétriques du plancher océanique ?', 'L’expansion des fonds océaniques', 'Les inversions enregistrées dans le basalte de part et d’autre d’une dorsale témoignent de sa création progressive.', 2, URLS.tectonics],
+  ['tectonics-continental-drift', 'Quelle idée Alfred Wegener a-t-il défendue ?', 'La dérive des continents', 'Wegener a proposé que les continents aient été réunis puis déplacés au cours du temps géologique.', 1, URLS.tectonics],
+  ['tectonics-pangaea', 'Comment s’appelait le supercontinent formé par la réunion de nombreux continents ?', 'La Pangée', 'La Pangée est le nom donné à un ancien assemblage de la plupart des terres émergées.', 1, URLS.tectonics],
+  ['tectonics-mantle-convection', 'Quel processus thermique contribue au mouvement du manteau ?', 'La convection', 'La matière chaude monte et la matière plus froide descend, ce qui transfère de la chaleur.', 2, URLS.tectonics],
+  ['tectonics-hotspot', 'Qu’est-ce qu’un point chaud ?', 'Une zone volcanique alimentée par une remontée chaude relativement fixe', 'Un point chaud peut produire une chaîne de volcans lorsque la plaque se déplace au-dessus de lui.', 2, URLS.tectonics],
+  ['tectonics-mountain-collision', 'Quel processus forme de grandes chaînes de montagnes continentales ?', 'La collision de plaques continentales', 'La compression épaissit et soulève la croûte lorsque deux continents convergent.', 1, URLS.tectonics],
+  ['tectonics-andes-subduction', 'Quel mécanisme explique principalement le volcanisme de la cordillère des Andes ?', 'La subduction d’une plaque océanique sous une plaque continentale', 'La convergence le long de la côte ouest de l’Amérique du Sud produit une zone de subduction active.', 2, URLS.tectonics],
+  ['tectonics-san-andreas-transform', 'Quel type de limite est associé à la faille de San Andreas ?', 'Une limite transformante', 'Les plaques y coulissent principalement horizontalement l’une contre l’autre.', 2, URLS.tectonics],
+  ['tectonics-rift-valley', 'Quelle forme de relief peut se développer lors de l’étirement d’un continent ?', 'Un rift ou fossé d’effondrement', 'L’extension fracture et abaisse la croûte dans une zone de divergence continentale.', 1, URLS.tectonics],
+  ['tectonics-oceanic-density', 'Pourquoi la croûte océanique plonge-t-elle souvent sous la croûte continentale ?', 'Elle est généralement plus dense', 'La croûte océanique basaltique dense s’enfonce préférentiellement lors d’une convergence.', 2, URLS.tectonics],
+  ['tectonics-crust-recycling', 'Que devient une partie de l’ancienne croûte océanique ?', 'Elle est recyclée dans le manteau par subduction', 'La subduction réintroduit de la lithosphère océanique dans l’intérieur de la Terre.', 1, URLS.tectonics],
+  ['tectonics-earthquake-boundaries', 'Où se concentrent de nombreux séismes mondiaux ?', 'Le long des limites de plaques', 'Les mouvements relatifs des plaques accumulent et libèrent des contraintes dans la croûte.', 1, URLS.tectonics],
+
+  // Séismes
+  ['earthquake-focus', 'Comment appelle-t-on le point de départ souterrain d’un séisme ?', 'Le foyer ou hypocentre', 'La rupture commence au foyer et les ondes sismiques se propagent à partir de là.', 1, URLS.earthquakes],
+  ['earthquake-epicenter', 'Comment appelle-t-on le point de la surface situé à la verticale du foyer ?', 'L’épicentre', 'L’épicentre est la projection du foyer sur la surface terrestre.', 1, URLS.earthquakes],
+  ['earthquake-fault', 'Qu’est-ce qu’une faille ?', 'Une fracture de la croûte le long de laquelle il y a eu déplacement', 'Le mouvement relatif des blocs sur une fracture peut produire un séisme.', 1, URLS.earthquakes],
+  ['earthquake-elastic-rebound', 'Quel modèle explique le relâchement brutal de la déformation lors d’un séisme ?', 'Le rebond élastique', 'Les roches se déforment sous contrainte puis se déplacent brusquement quand la faille rompt.', 2, URLS.earthquakes],
+  ['earthquake-p-wave-compression', 'Quel mouvement caractérise une onde P ?', 'Une compression et une dilatation dans le sens de propagation', 'L’onde P est longitudinale et peut traverser les solides, les liquides et les gaz.', 2, URLS.earthquakes],
+  ['earthquake-s-wave-shear', 'Quel mouvement caractérise une onde S ?', 'Un cisaillement perpendiculaire à la propagation', 'L’onde S est transversale et ne traverse pas les liquides.', 2, URLS.earthquakes],
+  ['earthquake-surface-waves', 'Où se propagent les ondes de surface ?', 'Près de la surface terrestre', 'Elles se déplacent le long de la surface et peuvent produire de fortes oscillations.', 1, URLS.earthquakes],
+  ['earthquake-magnitude-energy', 'Que mesure principalement la magnitude d’un séisme ?', 'La taille ou l’énergie de la rupture', 'La magnitude caractérise la source du séisme et non les dégâts en un lieu précis.', 2, URLS.earthquakes],
+  ['earthquake-intensity-place', 'De quoi dépend l’intensité ressentie en un lieu ?', 'Des effets locaux du séisme à cet endroit', 'L’intensité décrit les secousses et les dommages observés, qui varient selon la distance et le sol.', 2, URLS.earthquakes],
+  ['earthquake-seismometer', 'Quel instrument enregistre les mouvements du sol ?', 'Un sismomètre', 'Un sismomètre détecte et enregistre les vibrations produites par les ondes sismiques.', 1, URLS.earthquakes],
+  ['earthquake-aftershock', 'Comment appelle-t-on un séisme secondaire après un séisme principal ?', 'Une réplique', 'Les répliques réajustent la zone de faille après la rupture principale.', 1, URLS.earthquakes],
+  ['earthquake-liquefaction', 'Qu’est-ce que la liquéfaction lors d’un séisme ?', 'La perte temporaire de résistance d’un sol saturé et meuble', 'Les vibrations peuvent faire se comporter un sol saturé comme un fluide.', 2, URLS.earthquakes],
+  ['earthquake-tsunami-trigger', 'Quel événement sous-marin peut déclencher un tsunami ?', 'Le déplacement brutal du fond marin', 'Un séisme ou un glissement sous-marin peut déplacer la colonne d’eau et générer des vagues.', 1, URLS.earthquakes],
+  ['earthquake-normal-fault', 'Quel mouvement caractérise une faille normale ?', 'Le compartiment supérieur s’abaisse', 'Une faille normale accompagne généralement une extension de la croûte.', 2, URLS.earthquakes],
+  ['earthquake-reverse-fault', 'Quel mouvement caractérise une faille inverse ?', 'Le compartiment supérieur monte', 'Une faille inverse accompagne généralement une compression de la croûte.', 2, URLS.earthquakes],
+  ['earthquake-strike-slip-fault', 'Quel mouvement caractérise une faille décrochante ?', 'Un déplacement surtout horizontal', 'Les deux blocs glissent latéralement l’un par rapport à l’autre.', 2, URLS.earthquakes],
+
+  // Volcanisme
+  ['volcano-magma-lava', 'Comment appelle-t-on le magma lorsqu’il atteint la surface ?', 'De la lave', 'Le magma est le matériau fondu en profondeur; une fois émis à la surface, il est appelé lave.', 1, URLS.volcanoes],
+  ['volcano-shield-shape', 'Quelle forme générale possède un volcan-bouclier ?', 'Une forme large et à pentes douces', 'Des laves fluides s’étalent loin de l’éruption et construisent un édifice peu pentu.', 1, URLS.volcanoes],
+  ['volcano-stratovolcano', 'De quoi est souvent constitué un stratovolcan ?', 'D’alternances de laves et de matériaux fragmentaires', 'Les éruptions successives construisent un cône composite en couches.', 2, URLS.volcanoes],
+  ['volcano-cinder-cone', 'Que forme principalement un cône de scories ?', 'Une accumulation de fragments volcaniques autour d’un évent', 'Les projections retombent près de l’évent et forment un petit cône.', 1, URLS.volcanoes],
+  ['volcano-viscosity-silica', 'Quel effet une forte teneur en silice a-t-elle généralement sur une lave ?', 'Elle augmente sa viscosité', 'Les laves riches en silice s’écoulent moins facilement que les laves basaltiques.', 2, URLS.volcanoes],
+  ['volcano-gas-pressure', 'Quel rôle jouent les gaz dissous dans le magma ?', 'Leur expansion peut augmenter la pression et favoriser une éruption explosive', 'Quand la pression baisse, les gaz se dégagent et peuvent fragmenter le magma.', 2, URLS.volcanoes],
+  ['volcano-intrusive', 'Comment appelle-t-on une roche magmatique qui se solidifie sous la surface ?', 'Une roche intrusive', 'Le magma refroidit lentement en profondeur et peut former de gros cristaux.', 1, URLS.volcanoes],
+  ['volcano-extrusive', 'Comment appelle-t-on une roche magmatique qui se solidifie en surface ?', 'Une roche extrusive', 'La lave refroidit rapidement à la surface et produit souvent de petits cristaux.', 1, URLS.volcanoes],
+  ['volcano-caldera', 'Qu’est-ce qu’une caldeira ?', 'Une grande dépression volcanique formée par effondrement', 'Le sommet peut s’effondrer lorsque la chambre magmatique se vide partiellement.', 2, URLS.volcanoes],
+  ['volcano-tephra', 'Que désigne le terme téphra ?', 'L’ensemble des fragments projetés par une éruption', 'Cendres, lapilli et bombes volcaniques sont des formes de téphra.', 1, URLS.volcanoes],
+  ['volcano-pyroclastic-flow', 'Qu’est-ce qu’une coulée pyroclastique ?', 'Un mélange très chaud et rapide de gaz et de fragments volcaniques', 'Ce courant dense dévale les pentes et constitue un danger majeur des éruptions explosives.', 2, URLS.volcanoes],
+  ['volcano-lahar', 'Qu’est-ce qu’un lahar ?', 'Une coulée de boue et de débris d’origine volcanique', 'L’eau mobilise des cendres et des fragments sur les pentes ou dans les vallées.', 1, URLS.volcanoes],
+  ['volcano-hotspot-hawaii', 'Quel mécanisme explique la chaîne d’îles volcaniques d’Hawaï ?', 'Le déplacement d’une plaque au-dessus d’un point chaud', 'Le point chaud alimente des volcans successifs tandis que la plaque se déplace.', 2, URLS.volcanoes],
+  ['volcano-subduction-arc', 'Quel relief volcanique se forme souvent au-dessus d’une subduction ?', 'Un arc volcanique', 'La fusion liée à la plaque plongeante alimente des volcans alignés sur la plaque supérieure.', 2, URLS.volcanoes],
+  ['volcano-ash-air', 'Pourquoi les cendres volcaniques sont-elles dangereuses pour les avions ?', 'Elles peuvent endommager ou perturber les moteurs à réaction', 'Les particules abrasives et fusibles d’un nuage de cendres présentent un risque aéronautique.', 2, URLS.volcanoes],
+
+  // Eau, surface et reliefs
+  ['water-cycle-definition', 'Qu’est-ce que le cycle de l’eau ?', 'La circulation continue de l’eau entre plusieurs réservoirs terrestres', 'L’eau se déplace entre l’atmosphère, les océans, les continents, les sols et le sous-sol.', 1, URLS.waterCycle],
+  ['water-cycle-solar-gravity', 'Quelles forces principales mettent l’eau en mouvement dans le cycle hydrologique ?', 'L’énergie solaire et la gravité', 'Le Soleil provoque notamment l’évaporation et la gravité entraîne les écoulements et les précipitations.', 1, URLS.waterCycle],
+  ['water-evaporation', 'Comment appelle-t-on le passage de l’eau liquide à la vapeur ?', 'L’évaporation', 'L’énergie reçue permet à des molécules d’eau de quitter la surface liquide.', 1, URLS.waterCycle],
+  ['water-condensation', 'Comment appelle-t-on le passage de la vapeur d’eau à l’eau liquide ?', 'La condensation', 'La vapeur se refroidit et forme des gouttelettes, notamment dans les nuages.', 1, URLS.waterCycle],
+  ['water-precipitation', 'Comment appelle-t-on l’eau qui tombe des nuages vers la surface ?', 'Les précipitations', 'La pluie, la neige et la grêle sont des formes de précipitations.', 1, URLS.waterCycle],
+  ['water-sublimation', 'Comment appelle-t-on le passage direct de la glace à la vapeur ?', 'La sublimation', 'La sublimation fait passer l’eau de l’état solide à l’état gazeux sans étape liquide.', 2, URLS.waterCycle],
+  ['water-infiltration', 'Qu’est-ce que l’infiltration ?', 'La pénétration de l’eau dans le sol et le sous-sol', 'Une partie des précipitations s’infiltre dans les pores du sol et de la roche.', 1, URLS.infiltration],
+  ['water-runoff', 'Comment appelle-t-on l’eau qui s’écoule sur le sol sans s’infiltrer ?', 'Le ruissellement', 'Le ruissellement rejoint les chenaux, les rivières et finalement d’autres réservoirs.', 1, URLS.waterCycle],
+  ['water-transpiration', 'Qu’est-ce que la transpiration des plantes ?', 'La libération de vapeur d’eau par les feuilles', 'Les plantes absorbent de l’eau puis en rejettent une partie dans l’atmosphère.', 1, URLS.evapotranspiration],
+  ['water-evapotranspiration', 'Que regroupe l’évapotranspiration ?', 'L’évaporation et la transpiration', 'Le terme combine les flux de vapeur provenant des surfaces et des végétaux.', 1, URLS.evapotranspiration],
+  ['water-aquifer', 'Qu’est-ce qu’un aquifère ?', 'Une formation qui peut stocker et laisser circuler de l’eau souterraine', 'Les pores et fissures d’un aquifère permettent l’emmagasinement et l’écoulement de l’eau.', 1, URLS.groundwater],
+  ['water-water-table', 'Comment appelle-t-on la limite supérieure de la zone saturée ?', 'La nappe phréatique ou surface de la nappe', 'Sous cette limite, les espaces du sol et de la roche sont entièrement remplis d’eau.', 2, URLS.infiltration],
+  ['water-unsaturated-zone', 'Que contiennent les pores de la zone non saturée ?', 'De l’air et de l’eau', 'Dans la zone non saturée, l’eau n’occupe pas tous les espaces entre les grains.', 2, URLS.infiltration],
+  ['water-saturated-zone', 'Que contiennent les pores de la zone saturée ?', 'Principalement de l’eau', 'La zone saturée se trouve sous la nappe et ses vides sont remplis d’eau.', 1, URLS.infiltration],
+  ['water-groundwater-flow', 'Qu’est-ce qui dirige principalement l’écoulement souterrain ?', 'La gravité et les différences de pression', 'L’eau souterraine se déplace lentement dans les pores et les fissures suivant le gradient hydraulique.', 2, URLS.groundwater],
+  ['water-spring-definition', 'Qu’est-ce qu’une source ?', 'Un endroit où l’eau souterraine atteint naturellement la surface', 'Une source apparaît lorsqu’un écoulement souterrain débouche à la surface.', 1, URLS.springs],
+  ['water-recharge', 'Comment appelle-t-on le remplissage d’un aquifère par l’eau qui s’infiltre ?', 'La recharge', 'Une partie des précipitations infiltre le sol et alimente progressivement les réserves souterraines.', 1, URLS.infiltration],
+  ['water-watershed', 'Qu’est-ce qu’un bassin versant ?', 'La surface dont les eaux s’écoulent vers un même exutoire', 'Les reliefs séparent les bassins et orientent le ruissellement vers un cours d’eau ou un lac.', 1, URLS.waterCycle],
+  ['water-river-discharge', 'Que mesure le débit d’un cours d’eau ?', 'Le volume d’eau passant par une section par unité de temps', 'Le débit décrit la quantité d’eau transportée, souvent exprimée en volume par seconde.', 2, URLS.waterCycle],
+  ['water-spring-aquifer-overflow', 'Pourquoi une source peut-elle apparaître au pied d’une pente ?', 'Parce que la nappe y rencontre la surface du terrain', 'L’intersection entre la surface du sol et la zone saturée permet à l’eau de sortir.', 2, URLS.springs],
+  ['surface-weathering', 'Qu’est-ce que l’altération ?', 'La transformation ou la désagrégation des roches sur place', 'L’eau, l’air, les variations de température et les organismes altèrent les roches sans les transporter nécessairement.', 1, URLS.rocks],
+  ['surface-mechanical-weathering', 'Que fait l’altération mécanique à une roche ?', 'Elle la fragmente sans changer principalement sa composition chimique', 'Le gel, les variations thermiques ou la décompression peuvent produire des fragments.', 1, URLS.rocks],
+  ['surface-chemical-weathering', 'Que fait l’altération chimique à une roche ?', 'Elle modifie ses minéraux par des réactions chimiques', 'L’eau et les gaz dissous peuvent dissoudre ou transformer les minéraux.', 1, URLS.rocks],
+  ['surface-erosion', 'Qu’est-ce que l’érosion ?', 'Le déplacement de matériaux altérés', 'L’eau, la glace, le vent et la gravité transportent des sédiments loin de leur lieu d’origine.', 1, URLS.rocks],
+  ['surface-deposition', 'Qu’est-ce que la sédimentation ou dépôt ?', 'L’accumulation de matériaux transportés', 'Lorsque l’énergie du transport diminue, les particules se déposent et peuvent former des couches.', 1, URLS.rocks],
+  ['surface-glacial-erosion', 'Quel agent sculpte les vallées en U ?', 'Les glaciers', 'La glace en mouvement érode et élargit les vallées, leur donnant souvent un profil en U.', 2, URLS.rocks],
+  ['surface-glacial-moraine', 'Comment appelle-t-on un dépôt de débris transportés par un glacier ?', 'Une moraine', 'Les glaciers déplacent et abandonnent des sédiments et des blocs le long de leurs marges ou à leur extrémité.', 1, URLS.rocks],
+  ['surface-wind-dune', 'Quelle forme de relief le vent peut-il construire avec du sable ?', 'Une dune', 'Le vent transporte et accumule le sable lorsque sa vitesse ou sa capacité de transport diminue.', 1, URLS.rocks],
+  ['surface-river-meander', 'Qu’est-ce qu’un méandre ?', 'Une courbe sinueuse d’un cours d’eau', 'L’érosion et le dépôt sur les rives font évoluer les courbes d’une rivière.', 1, URLS.waterCycle],
+  ['surface-river-delta', 'Comment se forme généralement un delta ?', 'Par dépôt de sédiments à l’embouchure d’un cours d’eau', 'Quand le courant ralentit dans un lac ou une mer, les sédiments s’accumulent et peuvent diviser le chenal.', 1, URLS.waterCycle],
+  ['surface-karst-limestone', 'Quel type de roche favorise les reliefs karstiques ?', 'Le calcaire soluble', 'L’eau légèrement acide dissout le calcaire et peut former grottes, dolines et réseaux souterrains.', 2, URLS.groundwater],
+  ['surface-floodplain', 'Qu’est-ce qu’une plaine alluviale ?', 'Une surface basse construite par les dépôts d’un cours d’eau', 'Les crues déposent des sédiments dans les zones adjacentes au lit majeur.', 1, URLS.waterCycle],
+  ['surface-soil-horizon', 'Comment appelle-t-on une couche distincte dans un profil de sol ?', 'Un horizon', 'Un sol se décrit par des horizons présentant des propriétés et une composition différentes.', 1, URLS.infiltration],
+  ['surface-frost-weathering', 'Quel processus peut fracturer une roche lorsque l’eau gèle dans ses fissures ?', 'La gélifraction', 'La glace prend plus de volume et exerce une pression sur les parois des fissures.', 2, URLS.rocks],
+  ['surface-mass-wasting', 'Qu’est-ce qu’un mouvement de masse ?', 'Le déplacement de matériaux vers le bas sous l’effet de la gravité', 'Les éboulements, glissements et coulées sont des formes de déplacement gravitaire.', 1, URLS.rocks],
+  ['surface-landslide-water', 'Quel facteur peut favoriser un glissement de terrain ?', 'La saturation du sol par l’eau', 'L’eau augmente la masse et réduit souvent la résistance au cisaillement des matériaux meubles.', 2, URLS.waterCycle],
+  ['surface-coastal-wave-erosion', 'Que peut faire l’action répétée des vagues sur une côte rocheuse ?', 'Éroder et reculer la falaise', 'Les vagues concentrent leur énergie sur le pied des falaises et déplacent des fragments.', 1, URLS.rocks],
+  ['surface-cave-groundwater', 'Comment l’eau souterraine peut-elle former une grotte dans le calcaire ?', 'En dissolvant progressivement la roche le long des fissures', 'L’eau infiltrée circule dans les fractures et agrandit les conduits par dissolution.', 2, URLS.groundwater],
+  ['surface-ice-snow-storage', 'Sous quelles formes l’eau peut-elle être stockée durablement à la surface ?', 'Dans la glace et la neige', 'Les glaciers, les calottes et les manteaux neigeux constituent des réservoirs solides.', 1, URLS.waterCycle],
+  ['surface-ocean-saline', 'Pourquoi l’eau des océans est-elle qualifiée de saline ?', 'Parce qu’elle contient des sels dissous', 'La salinité provient de substances dissoutes, notamment des ions issus de l’altération et des échanges géochimiques.', 1, URLS.waterCycle],
+  ['surface-wetland-storage', 'Quel rôle hydrologique une zone humide peut-elle jouer ?', 'Stocker temporairement de l’eau', 'Les zones humides retiennent de l’eau et peuvent ralentir les écoulements de surface.', 1, URLS.waterCycle],
+  ['surface-reservoir-dam', 'Comment se forme un réservoir artificiel ?', 'Par accumulation d’eau derrière un barrage', 'Un barrage bloque un cours d’eau et crée un lac artificiel utilisé pour différents besoins.', 1, URLS.waterCycle],
+  ['surface-groundwater-river', 'Comment les eaux souterraines peuvent-elles alimenter une rivière ?', 'Par une décharge souterraine vers le cours d’eau', 'Un écoulement souterrain peut rejoindre le lit et maintenir le débit entre les pluies.', 2, URLS.groundwater],
+] as const;
+
+const provenance = (factId: string, sourceUrl: string): QuestionProvenance => ({
+  factId,
+  source: SOURCE,
+  url: sourceUrl,
+  license: LICENSE,
+  checkedAt: CHECKED_AT,
+  method: METHOD,
+  status: 'approved',
+});
+
+export const VERIFIED_EARTH_SCIENCE_USGS_QUESTIONS: Question[] = rows.map(([id, question, answer, explanation, difficulty, sourceUrl]) => ({
+  id: `earth-science-usgs-${id}`,
+  factId: `fact-earth-science-usgs-${id}`,
+  version: 1,
+  type: 'flashcard',
+  question,
+  answer,
+  acceptedAnswers: [answer],
+  explanation,
+  category: 'Sciences',
+  subcategory: 'Sciences de la Terre',
+  tags: ['sciences', 'géologie', 'terre'],
+  difficulty,
+  source: SOURCE,
+  provenance: provenance(`fact-earth-science-usgs-${id}`, sourceUrl),
+} satisfies Question));
+
+export const VERIFIED_EARTH_SCIENCE_USGS_BATCH: VerifiedContentBatch = {
+  id: 'earth-science-usgs-2026-09',
+  questions: VERIFIED_EARTH_SCIENCE_USGS_QUESTIONS,
+  source: SOURCE,
+  sourceUrl: 'https://www.usgs.gov/science/science-explorer/geology',
+  license: LICENSE,
+  checkedAt: CHECKED_AT,
+  method: 'Relecture manuelle de 120 faits indépendants dans les ressources USGS spécialisées; les URLs de chapitre sont conservées par question.',
+  status: 'approved',
+};
+
+export default VERIFIED_EARTH_SCIENCE_USGS_BATCH;
