@@ -171,6 +171,24 @@ test.describe('parcours persistants Flashmemory', () => {
     await expect.poll(() => readReviewEvents(page, profileId)).toHaveLength(0);
   });
 
+  test('le thème système sombre garde du contraste et une session iPhone compacte', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await createFirstProfile(page, 'Contraste');
+    await expect.poll(() => page.locator('html').getAttribute('data-theme')).toBe('system');
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1)).toBe(true);
+
+    await page.getByRole('button', { name: /Quitter/ }).click();
+    await page.getByRole('button', { name: 'Stats' }).click();
+    await page.getByRole('button', { name: '7 jours' }).click();
+    await expect(page.getByRole('button', { name: '7 jours' })).toHaveCSS('background-color', 'rgb(39, 75, 91)');
+    await expect(page.getByRole('button', { name: '7 jours' })).toHaveCSS('color', 'rgb(255, 255, 255)');
+
+    await page.getByRole('button', { name: 'Thèmes' }).click();
+    await expect(page.locator('.topic-list button.selected').first()).toHaveCSS('background-color', 'rgb(18, 62, 57)');
+    await expect(page.locator('.topic-list button.selected').first()).toHaveCSS('color', 'rgb(186, 246, 233)');
+  });
+
   test('un QCM montre la réponse et un feedback non punitif', async ({ page }) => {
     // Keep the session seeds deterministic, but do not couple this scenario to
     // one particular question's position as the verified catalogue grows.

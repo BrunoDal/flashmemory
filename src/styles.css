@@ -26,7 +26,7 @@ html[data-theme='dark'] { --ink:#ebf2f5; --muted:#9caeb6; --paper:#1a2b37; --lin
 .question-source a { flex:0 0 auto; color:var(--accent); font-weight:700; text-decoration-thickness:1.5px; text-underline-offset:3px; }
 .question-source a:focus-visible { outline:3px solid #16a89066; outline-offset:3px; border-radius:3px; }
 @media (max-width: 420px) { .question-source { align-items:flex-start; flex-direction:column; gap:5px; } }
-.topic-actions { display:flex; flex-wrap:wrap; gap:9px; margin:22px 0 -12px; }
+.topic-actions { display:flex; flex-wrap:wrap; gap:9px; margin:22px 0 4px; }
 .topic-actions button { min-height:42px; border:1px solid var(--line); border-radius:10px; background:var(--paper); color:var(--ink); padding:9px 12px; font-weight:700; font-size:.82rem; }
 .topic-actions button:hover { border-color:var(--accent); color:var(--accent); }
 .topic-actions button:focus-visible { outline:3px solid #16a89066; outline-offset:2px; }
@@ -47,6 +47,8 @@ html[data-theme='dark'] { --ink:#ebf2f5; --muted:#9caeb6; --paper:#1a2b37; --lin
   --accent: #0b9f89;
   --accent-strong: #087866;
   --deep: #123246;
+  --selected-control: #123246;
+  --selected-control-ink: #ffffff;
   --warm: #fff6e5;
   --shadow-sm: 0 4px 16px rgb(18 50 70 / 7%);
   --shadow-md: 0 16px 40px rgb(18 50 70 / 12%);
@@ -682,6 +684,110 @@ html[data-theme='dark'] .progress {
 
   html[data-theme='system'] .progress {
     background: #29434b;
+  }
+}
+
+/* Contrast and compact study layout — shared by explicit and system dark mode. */
+.period-picker button.selected {
+  background: var(--selected-control);
+  color: var(--selected-control-ink);
+}
+
+.rating-grid {
+  margin-top: 12px;
+}
+
+html[data-theme='dark'] {
+  --selected-control: #274b5b;
+  --selected-control-ink: #ffffff;
+}
+
+html[data-theme='dark'] .resume-card,
+html[data-theme='dark'] .topic-launch,
+html[data-theme='dark'] .quick-actions button:hover,
+html[data-theme='dark'] .settings-actions button:hover,
+html[data-theme='dark'] .file-button:hover,
+html[data-theme='dark'] .profile-management-button:hover,
+html[data-theme='dark'] .rating:hover {
+  background: #1d3943;
+}
+
+html[data-theme='dark'] .topic-list button.selected,
+html[data-theme='dark'] .onboard-topics button.selected {
+  border-color: #27c2a9;
+  background: #123e39;
+  color: #baf6e9;
+}
+
+html[data-theme='dark'] .choices button.correct {
+  border-color: #27c2a9;
+  background: #103e37;
+  color: #baf6e9;
+}
+
+html[data-theme='dark'] .choices button.wrong {
+  border-color: #f18a77;
+  background: #402b31;
+  color: #ffd8d1;
+}
+
+html[data-theme='dark'] .end-icon {
+  background: #103e37;
+  color: #8be7d5;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme='system'] {
+    --selected-control: #274b5b;
+    --selected-control-ink: #ffffff;
+  }
+
+  html[data-theme='system'] .resume-card,
+  html[data-theme='system'] .topic-launch,
+  html[data-theme='system'] .quick-actions button:hover,
+  html[data-theme='system'] .settings-actions button:hover,
+  html[data-theme='system'] .file-button:hover,
+  html[data-theme='system'] .profile-management-button:hover,
+  html[data-theme='system'] .rating:hover {
+    background: #1d3943;
+  }
+
+  html[data-theme='system'] .topic-list button.selected,
+  html[data-theme='system'] .onboard-topics button.selected {
+    border-color: #27c2a9;
+    background: #123e39;
+    color: #baf6e9;
+  }
+
+  html[data-theme='system'] .choices button.correct {
+    border-color: #27c2a9;
+    background: #103e37;
+    color: #baf6e9;
+  }
+
+  html[data-theme='system'] .choices button.wrong {
+    border-color: #f18a77;
+    background: #402b31;
+    color: #ffd8d1;
+  }
+
+  html[data-theme='system'] .end-icon {
+    background: #103e37;
+    color: #8be7d5;
+  }
+}
+
+@media (max-width: 640px) {
+  .shell {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+
+  .study {
+    padding-bottom: 12px;
+  }
+
+  .question-card {
+    min-height: calc(100svh - 326px);
   }
 }
 
