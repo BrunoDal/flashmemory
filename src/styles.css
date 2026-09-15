@@ -789,6 +789,40 @@ html[data-theme='dark'] .end-icon {
   .question-card {
     min-height: calc(100svh - 326px);
   }
+
+  /* A revealed card adds an answer, source, and four ratings. Tighten only
+     that state so a standard iPhone viewport does not have to scroll past
+     the fixed navigation before the rating controls are reachable. */
+  .study:has(.question-card.is-revealed) .progress {
+    margin-bottom: 18px;
+  }
+
+  .question-card.is-revealed {
+    padding: 18px 16px;
+  }
+
+  .question-card.is-revealed h1 {
+    margin: 18px 0;
+  }
+
+  .question-card.is-revealed .answer {
+    margin-bottom: 12px;
+    padding: 10px 12px 10px 14px;
+  }
+
+  .question-card.is-revealed .question-source {
+    margin-top: 10px;
+    padding-top: 9px;
+  }
+
+  .question-card.is-revealed .rating-grid {
+    margin-top: 8px;
+  }
+
+  .question-card.is-revealed .rating {
+    min-height: 56px;
+    padding: 8px 5px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

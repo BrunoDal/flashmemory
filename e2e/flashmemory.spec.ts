@@ -178,6 +178,19 @@ test.describe('parcours persistants Flashmemory', () => {
     await expect.poll(() => page.locator('html').getAttribute('data-theme')).toBe('system');
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1)).toBe(true);
 
+    const reveal = page.getByRole('button', { name: /Afficher la réponse/ });
+    if (await reveal.isVisible()) {
+      await reveal.click();
+    } else {
+      await page.locator('.choices button').first().click();
+    }
+    await expect(page.locator('.question-card.is-revealed')).toBeVisible();
+    await expect.poll(() => page.evaluate(() => {
+      const card = document.querySelector<HTMLElement>('.question-card')?.getBoundingClientRect();
+      const navigation = document.querySelector<HTMLElement>('.bottom-nav')?.getBoundingClientRect();
+      return Boolean(card && navigation && document.documentElement.scrollHeight <= window.innerHeight + 1 && card.bottom <= navigation.top - 8);
+    })).toBe(true);
+
     await page.getByRole('button', { name: /Quitter/ }).click();
     await page.getByRole('button', { name: 'Stats' }).click();
     await page.getByRole('button', { name: '7 jours' }).click();
