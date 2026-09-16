@@ -697,6 +697,40 @@ html[data-theme='dark'] .progress {
   margin-top: 12px;
 }
 
+/* Ratings use a compact visual hierarchy: the shortcut is a separate badge,
+   the choice remains the primary readable label, then the timing sits below. */
+.rating {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  font-size: 1.05rem;
+  gap: 5px;
+  justify-content: center;
+  line-height: 1.15;
+  padding: 12px 9px;
+}
+
+.rating-title {
+  align-items: center;
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.rating kbd {
+  margin: 0;
+  min-width: 1.8em;
+  padding: 2px 4px;
+  text-align: center;
+}
+
+.rating small {
+  font-size: .73rem;
+  line-height: 1.2;
+  margin: 0;
+}
+
 html[data-theme='dark'] {
   --selected-control: #274b5b;
   --selected-control-ink: #ffffff;
@@ -894,6 +928,19 @@ html[data-theme='dark'] .rating.easy {
   .question-card.is-revealed .rating {
     min-height: 54px;
     padding: 8px 5px;
+  }
+
+  .question-card.is-revealed .rating {
+    font-size: 1rem;
+    gap: 3px;
+  }
+
+  .question-card.is-revealed .rating-title {
+    gap: 6px;
+  }
+
+  .question-card.is-revealed .rating small {
+    font-size: .72rem;
   }
 }
 
