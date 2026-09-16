@@ -29,13 +29,51 @@ import { VERIFIED_MICROBIOLOGY_OPENSTAX_BATCH } from './verified-microbiology-op
 import { VERIFIED_WCAG_W3C_BATCH } from './verified-wcag-w3c.ts';
 
 const CONTENT_CHECKED_AT = '2026-09-15';
+const DIRECT_SOURCES_CHECKED_AT = '2026-09-16';
+/** Direct institutional pages for the first tranche of the legacy catalogue.
+ * Keep this map deliberately small: a pointer is promoted only when the
+ * linked page is an authoritative, stable source for the complete claim. */
+const DIRECT_SOURCES: Record<string, { source: string; url: string }> = {
+  'history-revolution-1789': { source: 'Assemblée nationale — La Révolution française', url: 'https://www.assemblee-nationale.fr/histoire/revolution.asp' },
+  'history-moon-landing': { source: 'NASA — Apollo 11', url: 'https://www.nasa.gov/mission/apollo-11/' },
+  'history-berlin-wall': { source: 'Deutscher Bundestag — Chute du mur de Berlin', url: 'https://www.bundestag.de/en/parliament/history/parliamentarism/berlin_wall-200216' },
+  'science-water-boiling': { source: 'NIST — Water properties', url: 'https://webbook.nist.gov/cgi/inchi?ID=C7732185&Mask=4' },
+  'science-speed-light': { source: 'NIST — SI units', url: 'https://www.nist.gov/pml/owm/si-units-length' },
+  'science-venus-closest': { source: 'NASA — Mercury', url: 'https://science.nasa.gov/mercury/' },
+  'astronomy-planets-eight': { source: 'NASA — Solar system', url: 'https://science.nasa.gov/solar-system/' },
+  'astronomy-red-planet': { source: 'NASA — Mars', url: 'https://science.nasa.gov/mars/' },
+  'astronomy-galaxy-milky-way': { source: 'NASA — Milky Way galaxy', url: 'https://science.nasa.gov/universe/galaxies/milky-way/' },
+  'astronomy-saturn-rings': { source: 'NASA — Saturn', url: 'https://science.nasa.gov/saturn/' },
+  'biology-photosynthesis': { source: 'OpenStax Biology 2e — Photosynthesis', url: 'https://openstax.org/books/biology-2e/pages/8-1-overview-of-photosynthesis' },
+  'nature-largest-mammal': { source: 'NOAA Fisheries — Blue whale', url: 'https://www.fisheries.noaa.gov/species/blue-whale' },
+  'nature-bees-pollination': { source: 'USDA — Pollinators', url: 'https://www.usda.gov/peoples-garden/pollinators' },
+  'technology-www-inventor': { source: 'CERN — The birth of the Web', url: 'https://home.cern/science/computing/birth-web' },
+  'technology-first-iphone': { source: 'Apple Newsroom — iPhone', url: 'https://www.apple.com/newsroom/2007/01/iphone/' },
+  'informatics-http-acronym': { source: 'W3C — HTTP specifications', url: 'https://www.w3.org/Protocols/' },
+  'sport-olympic-rings': { source: 'Comité International Olympique — Symboles olympiques', url: 'https://olympics.com/ioc/olympic-rings' },
+  'france-republic-motto': { source: 'Élysée — La devise de la République', url: 'https://www.elysee.fr/la-presidence/la-devise-de-la-republique-francaise' },
+  'france-national-day': { source: 'Élysée — 14 juillet', url: 'https://www.elysee.fr/la-presidence/le-14-juillet' },
+  'france-french-cuisine-baguette': { source: 'UNESCO — Savoir-faire et culture de la baguette', url: 'https://ich.unesco.org/fr/RL/les-savoir-faire-artisanaux-et-la-culture-de-la-baguette-de-pain-01883' },
+  'france-louvre-pyramid': { source: 'Louvre — La pyramide', url: 'https://www.louvre.fr/en/what-s-on/life-at-the-museum/the-pyramid' },
+  'france-national-library': { source: 'Bibliothèque nationale de France — François-Mitterrand', url: 'https://www.bnf.fr/fr/la-bibliotheque-francois-mitterrand' },
+  'france-french-language-official': { source: 'Légifrance — Constitution, article 2', url: 'https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006419291/' },
+  'europe-eu-flag-stars': { source: 'Union européenne — Le drapeau européen', url: 'https://european-union.europa.eu/principles-countries-history/symbols/european-flag_en' },
+  'europe-euro-currency': { source: 'Banque centrale européenne — L’euro', url: 'https://www.ecb.europa.eu/euro/html/index.fr.html' },
+  'europe-norway-eu-member': { source: 'Union européenne — Norway', url: 'https://european-union.europa.eu/principles-countries-history/country-profiles/norway_en' },
+  'world-united-nations-founded': { source: 'Nations unies — Histoire de l’ONU', url: 'https://www.un.org/en/about-us/history-of-the-united-nations' },
+  'world-antarctica-ice': { source: 'British Antarctic Survey — Antarctica', url: 'https://www.bas.ac.uk/about/about-antarctica/' },
+  'science-ph-scale': { source: 'USGS — pH and water', url: 'https://www.usgs.gov/special-topics/water-science-school/science/ph-and-water' },
+  'technology-qr-code': { source: 'DENSO WAVE — QR Code history', url: 'https://www.denso-wave.com/en/technology/vol1.html' },
+  'inventions-vaccine-smallpox': { source: 'Organisation mondiale de la Santé — Variole', url: 'https://www.who.int/news-room/questions-and-answers/item/smallpox' },
+  'arts-museum-louvre': { source: 'Louvre — Le musée', url: 'https://www.louvre.fr/en/what-s-on/life-at-the-museum' },
+};
 const provenanceFor = (id: string, answer: string): QuestionProvenance => ({
   factId: `fact-${id}`,
-  source: 'Contrôle éditorial Flashmemory — piste Wikipédia',
-  url: `https://fr.wikipedia.org/wiki/Special:Recherche?search=${encodeURIComponent(answer)}`,
-  license: 'CC BY-SA 4.0',
-  checkedAt: CONTENT_CHECKED_AT,
-  method: 'editorial-review-with-source-pointer',
+  source: DIRECT_SOURCES[id]?.source ?? 'Contrôle éditorial Flashmemory — piste Wikipédia',
+  url: DIRECT_SOURCES[id]?.url ?? `https://fr.wikipedia.org/wiki/Special:Recherche?search=${encodeURIComponent(answer)}`,
+  license: DIRECT_SOURCES[id] ? 'Lien institutionnel — consulter les conditions du site' : 'CC BY-SA 4.0',
+  checkedAt: DIRECT_SOURCES[id] ? DIRECT_SOURCES_CHECKED_AT : CONTENT_CHECKED_AT,
+  method: DIRECT_SOURCES[id] ? 'manual-check-against-direct-institutional-source' : 'editorial-review-with-source-pointer',
   status: 'approved',
 });
 const common = (id: string, answer: string) => ({ id, factId: `fact-${id}`, provenance: provenanceFor(id, answer) });
