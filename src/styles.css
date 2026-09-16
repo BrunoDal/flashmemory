@@ -736,6 +736,42 @@ html[data-theme='dark'] .end-icon {
   color: #8be7d5;
 }
 
+html[data-theme='dark'] .answer {
+  background: linear-gradient(100deg, rgb(24 74 67 / 48%), transparent);
+}
+
+html[data-theme='dark'] .topic-pills span {
+  background: #1d3943;
+  color: var(--ink);
+}
+
+html[data-theme='dark'] .primary,
+html[data-theme='dark'] .pwa-banner button {
+  color: #072c2b;
+}
+
+html[data-theme='dark'] .profile-chip span {
+  color: #ffda94;
+}
+
+html[data-theme='dark'] .pwa-banner.offline > span:first-child,
+html[data-theme='dark'] .rating.hard {
+  color: #ffd58a;
+}
+
+html[data-theme='dark'] .rating.again,
+html[data-theme='dark'] .danger-button {
+  color: #ffad9e;
+}
+
+html[data-theme='dark'] .rating.good {
+  color: #8be7d5;
+}
+
+html[data-theme='dark'] .rating.easy {
+  color: #a9d5ff;
+}
+
 @media (prefers-color-scheme: dark) {
   html[data-theme='system'] {
     --selected-control: #274b5b;
@@ -775,6 +811,42 @@ html[data-theme='dark'] .end-icon {
     background: #103e37;
     color: #8be7d5;
   }
+
+  html[data-theme='system'] .answer {
+    background: linear-gradient(100deg, rgb(24 74 67 / 48%), transparent);
+  }
+
+  html[data-theme='system'] .topic-pills span {
+    background: #1d3943;
+    color: var(--ink);
+  }
+
+  html[data-theme='system'] .primary,
+  html[data-theme='system'] .pwa-banner button {
+    color: #072c2b;
+  }
+
+  html[data-theme='system'] .profile-chip span {
+    color: #ffda94;
+  }
+
+  html[data-theme='system'] .pwa-banner.offline > span:first-child,
+  html[data-theme='system'] .rating.hard {
+    color: #ffd58a;
+  }
+
+  html[data-theme='system'] .rating.again,
+  html[data-theme='system'] .danger-button {
+    color: #ffad9e;
+  }
+
+  html[data-theme='system'] .rating.good {
+    color: #8be7d5;
+  }
+
+  html[data-theme='system'] .rating.easy {
+    color: #a9d5ff;
+  }
 }
 
 @media (max-width: 640px) {
@@ -802,17 +874,17 @@ html[data-theme='dark'] .end-icon {
   }
 
   .question-card.is-revealed h1 {
-    margin: 18px 0;
+    margin: 14px 0;
   }
 
   .question-card.is-revealed .answer {
-    margin-bottom: 12px;
-    padding: 10px 12px 10px 14px;
+    margin-bottom: 10px;
+    padding: 8px 12px 8px 14px;
   }
 
   .question-card.is-revealed .question-source {
-    margin-top: 10px;
-    padding-top: 9px;
+    margin-top: 8px;
+    padding-top: 7px;
   }
 
   .question-card.is-revealed .rating-grid {
@@ -820,7 +892,7 @@ html[data-theme='dark'] .end-icon {
   }
 
   .question-card.is-revealed .rating {
-    min-height: 56px;
+    min-height: 54px;
     padding: 8px 5px;
   }
 }

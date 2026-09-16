@@ -190,6 +190,11 @@ test.describe('parcours persistants Flashmemory', () => {
       const navigation = document.querySelector<HTMLElement>('.bottom-nav')?.getBoundingClientRect();
       return Boolean(card && navigation && document.documentElement.scrollHeight <= window.innerHeight + 1 && card.bottom <= navigation.top - 8);
     })).toBe(true);
+    await expect(page.locator('.answer')).toHaveCSS('background-image', /rgba\(24, 74, 67, 0\.48\)/);
+    await expect(page.locator('.rating.again')).toHaveCSS('color', 'rgb(255, 173, 158)');
+    await expect(page.locator('.rating.hard')).toHaveCSS('color', 'rgb(255, 213, 138)');
+    await expect(page.locator('.rating.good')).toHaveCSS('color', 'rgb(139, 231, 213)');
+    await expect(page.locator('.rating.easy')).toHaveCSS('color', 'rgb(169, 213, 255)');
 
     await page.getByRole('button', { name: /Quitter/ }).click();
     await page.getByRole('button', { name: 'Stats' }).click();
