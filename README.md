@@ -1,6 +1,6 @@
 # Flashmemory
 
-Flashmemory est une PWA de culture générale fondée sur le rappel actif et la répétition espacée. Son catalogue contient actuellement **3280 faits/questions éditoriaux** répartis dans les 28 thèmes de l’application, avec des flashcards, QCM et vrais/faux. Chaque carte possède un `factId` stable et une provenance structurée (source, URL, licence, date et méthode de contrôle), visible après la réponse ou dans l’explorateur. L’interface distingue les sources approuvées des pistes éditoriales de contrôle des cartes historiques. Le catalogue, les profils et la progression restent sur l’appareil : la session quotidienne fonctionne hors ligne.
+Flashmemory est une PWA de culture générale fondée sur le rappel actif et la répétition espacée. Son catalogue contient actuellement **3312 faits/questions éditoriaux** répartis dans les 28 thèmes de l’application, avec des flashcards, QCM et vrais/faux. Chaque carte possède un `factId` stable et une provenance structurée (source, URL, licence, date et méthode de contrôle), visible après la réponse ou dans l’explorateur. L’interface distingue les sources approuvées des pistes éditoriales de contrôle des cartes historiques. Le catalogue, les profils et la progression restent sur l’appareil : la session quotidienne fonctionne hors ligne.
 
 Le service worker précache le shell, met en cache à l’exécution les assets statiques de même origine et utilise une stratégie réseau-avec-repli-cache uniquement pour les navigations. Les anciennes caches sont supprimées à l’activation d’une nouvelle version. Une mise à jour détectée est proposée avec le bouton **Recharger** afin de ne pas interrompre une session ; l’activation n’efface jamais IndexedDB.
 
@@ -43,6 +43,8 @@ page source indiquent explicitement `license:ccby` et `licenseversion:40`.
 Le lot WCAG 2.2 ajoute 32 notions distinctes d’accessibilité web, contrôlées contre la recommandation normative du W3C avec un lien direct vers chaque critère. Il couvre notamment contraste, reflow mobile, clavier, focus, formulaires et technologies d’assistance.
 
 Le lot UNESCO ajoute 30 cartes distinctes sur des sites du patrimoine mondial culturel et naturel, avec une page UNESCO directe par carte. Il couvre notamment Angkor, Machu Picchu, Petra, Fès, Tombouctou, Rapa Nui, le Serengeti, les Galápagos, Yellowstone et le delta de l’Okavango.
+
+Le lot Nobel Prize ajoute 32 cartes distinctes sur l’histoire des prix, leurs institutions, les sciences, la littérature, la paix et l’économie. Chaque carte pointe vers une page officielle du prix ou du lauréat concerné.
 
 Le lot de géographie physique ajoute 117 faits stables issus de pages officielles
 USGS, NOAA, NASA Earth Observatory et USDA ; ces agences fédérales publient ces

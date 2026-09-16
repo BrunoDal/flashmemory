@@ -257,6 +257,8 @@ test.describe('parcours persistants Flashmemory', () => {
       await page.locator('.choices button').first().click();
       await expect(page.getByText('Réponse', { exact: true })).toBeVisible();
     }
+    await expect(page.locator('.rating.again')).toHaveAttribute('aria-keyshortcuts', '1');
+    await expect(page.locator('.rating.hard')).toHaveAttribute('aria-keyshortcuts', '2');
     await page.keyboard.press('2');
     await expect(page.locator('.study-head')).toContainText('2 /');
   });
