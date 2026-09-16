@@ -12,6 +12,11 @@ import { activateWaitingServiceWorker, registerServiceWorker } from '../pwa/regi
 type View = 'home' | 'study' | 'topics' | 'stats' | 'explore' | 'settings' | 'profiles';
 const ratingLabels: Record<ReviewRating, string> = { again: 'À revoir', hard: 'Difficile', good: 'Correct', easy: 'Facile' };
 
+function isEditableKeyboardTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return target.isContentEditable || ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName);
+}
+
 export default function App() {
   const [activeId, setActiveId] = useState<string | undefined>(() => localStorage.getItem('flashmemory.profile') || undefined);
   const { profiles, profilesLoading, states, events, settings, refresh, refreshProfiles, setSettings } = useAppData(activeId);
@@ -99,7 +104,22 @@ export default function App() {
   };
   const selectProfile = (id: string) => { setActiveId(id); localStorage.setItem('flashmemory.profile', id); setView('home'); };
   const q = session[index];
-  useEffect(() => { const onKey = (event: KeyboardEvent) => { if (view !== 'study') return; if (event.code === 'Space' && !revealed && q?.type !== 'multiple-choice') { event.preventDefault(); setRevealed(true); } if (revealed && ['1', '2', '3', '4'].includes(event.key)) void answer((['again', 'hard', 'good', 'easy'] as ReviewRating[])[Number(event.key) - 1]); }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, [view, revealed, answer, q]);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (view !== 'study' || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || isEditableKeyboardTarget(event.target)) return;
+      if (event.code === 'Space' && !revealed && q?.type !== 'multiple-choice') {
+        event.preventDefault();
+        setRevealed(true);
+        return;
+      }
+      if (revealed && !event.repeat && ['1', '2', '3', '4'].includes(event.key)) {
+        event.preventDefault();
+        void answer((['again', 'hard', 'good', 'easy'] as ReviewRating[])[Number(event.key) - 1]);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [view, revealed, answer, q]);
   const createAdditionalProfile = async (name: string) => {
     if (!profile) return;
     const created = await createProfile(name, profile.activeTopics, 'any');

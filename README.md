@@ -1,6 +1,6 @@
 # Flashmemory
 
-Flashmemory est une PWA de culture générale fondée sur le rappel actif et la répétition espacée. Son catalogue contient actuellement **3218 faits/questions éditoriaux** répartis dans les 28 thèmes de l’application, avec des flashcards, QCM et vrais/faux. Chaque carte possède un `factId` stable et une provenance structurée (source, URL, licence, date et méthode de contrôle), visible après la réponse ou dans l’explorateur. L’interface distingue les sources approuvées des pistes éditoriales de contrôle des cartes historiques. Le catalogue, les profils et la progression restent sur l’appareil : la session quotidienne fonctionne hors ligne.
+Flashmemory est une PWA de culture générale fondée sur le rappel actif et la répétition espacée. Son catalogue contient actuellement **3250 faits/questions éditoriaux** répartis dans les 28 thèmes de l’application, avec des flashcards, QCM et vrais/faux. Chaque carte possède un `factId` stable et une provenance structurée (source, URL, licence, date et méthode de contrôle), visible après la réponse ou dans l’explorateur. L’interface distingue les sources approuvées des pistes éditoriales de contrôle des cartes historiques. Le catalogue, les profils et la progression restent sur l’appareil : la session quotidienne fonctionne hors ligne.
 
 Le service worker précache le shell, met en cache à l’exécution les assets statiques de même origine et utilise une stratégie réseau-avec-repli-cache uniquement pour les navigations. Les anciennes caches sont supprimées à l’activation d’une nouvelle version. Une mise à jour détectée est proposée avec le bouton **Recharger** afin de ne pas interrompre une session ; l’activation n’efface jamais IndexedDB.
 
@@ -38,6 +38,8 @@ conserver la date et la méthode de vérification.
 Le lot de 105 faits de philosophie provenant d’Introduction to Philosophy
 (OpenStax, Humanities LibreTexts) est déclaré CC BY 4.0 ; les métadonnées de la
 page source indiquent explicitement `license:ccby` et `licenseversion:40`.
+
+Le lot WCAG 2.2 ajoute 32 notions distinctes d’accessibilité web, contrôlées contre la recommandation normative du W3C avec un lien direct vers chaque critère. Il couvre notamment contraste, reflow mobile, clavier, focus, formulaires et technologies d’assistance.
 
 Le lot de géographie physique ajoute 117 faits stables issus de pages officielles
 USGS, NOAA, NASA Earth Observatory et USDA ; ces agences fédérales publient ces
@@ -87,10 +89,11 @@ npm run e2e
 
 La suite `e2e/flashmemory.spec.ts` vérifie le premier lancement (création de profil,
 réponse puis reprise exacte après rechargement), l’isolation de la progression entre
-deux profils, une session utilisable après passage hors connexion, les réglages et
-le feedback d’un QCM. Chaque test utilise un contexte navigateur Playwright distinct,
-donc son IndexedDB est isolé. Le serveur Vite est lancé automatiquement par la
-configuration Playwright.
+deux profils, une session utilisable après passage hors connexion, les réglages, les
+raccourcis `Espace` et `1` à `4`, le feedback d’un QCM, ainsi que le manifeste,
+l’icône et l’enregistrement du service worker. Chaque test utilise un contexte
+navigateur Playwright distinct, donc son IndexedDB est isolé. Le serveur Vite est
+lancé automatiquement par la configuration Playwright.
 
 Sous Windows, Playwright peut laisser son processus Node ouvert après que les cinq
 scénarios aient réussi ; les résultats sont alors valides mais il peut être nécessaire

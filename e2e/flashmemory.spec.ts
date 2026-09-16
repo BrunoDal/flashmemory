@@ -128,6 +128,46 @@ test.describe('parcours persistants Flashmemory', () => {
     await expect(page.locator('.study-head')).toContainText('2 /');
   });
 
+  test('la PWA expose un manifeste installable et un service worker au bon périmètre', async ({ page }) => {
+    const manifestResponse = await page.request.get('/manifest.webmanifest');
+    expect(manifestResponse.ok()).toBe(true);
+    expect(manifestResponse.headers()['content-type']).toContain('manifest+json');
+
+    const manifest = await manifestResponse.json() as {
+      id?: string;
+      start_url?: string;
+      scope?: string;
+      display?: string;
+      icons?: Array<{ src?: string; sizes?: string; type?: string }>;
+    };
+    expect(manifest).toMatchObject({
+      id: './',
+      start_url: './',
+      scope: './',
+      display: 'standalone',
+    });
+    expect(manifest.icons).toEqual(expect.arrayContaining([
+      expect.objectContaining({ src: './icon.svg', type: 'image/svg+xml' }),
+    ]));
+
+    const iconResponse = await page.request.get('/icon.svg');
+    expect(iconResponse.ok()).toBe(true);
+    expect(iconResponse.headers()['content-type']).toContain('image/svg+xml');
+
+    await page.goto('/');
+    const worker = await page.evaluate(async () => {
+      if (!('serviceWorker' in navigator)) return null;
+      const registration = await navigator.serviceWorker.ready;
+      return {
+        scope: registration.scope,
+        scriptUrl: registration.active?.scriptURL ?? '',
+      };
+    });
+    expect(worker).not.toBeNull();
+    expect(worker?.scope).toMatch(/\/$/);
+    expect(worker?.scriptUrl).toMatch(/\/sw\.js$/);
+  });
+
   test('les réglages de difficulté, son et vibrations sont persistés', async ({ page }) => {
     await createFirstProfile(page, 'Réglages');
     await page.getByRole('button', { name: /Quitter/ }).click();
@@ -205,6 +245,20 @@ test.describe('parcours persistants Flashmemory', () => {
     await page.getByRole('button', { name: 'Thèmes' }).click();
     await expect(page.locator('.topic-list button.selected').first()).toHaveCSS('background-color', 'rgb(18, 62, 57)');
     await expect(page.locator('.topic-list button.selected').first()).toHaveCSS('color', 'rgb(186, 246, 233)');
+  });
+
+  test('les raccourcis clavier révèlent puis notent une carte', async ({ page }) => {
+    await createFirstProfile(page, 'Raccourcis');
+    const reveal = page.getByRole('button', { name: /Afficher la réponse/ });
+    if (await reveal.isVisible()) {
+      await page.keyboard.press('Space');
+      await expect(page.getByText('Réponse', { exact: true })).toBeVisible();
+    } else {
+      await page.locator('.choices button').first().click();
+      await expect(page.getByText('Réponse', { exact: true })).toBeVisible();
+    }
+    await page.keyboard.press('2');
+    await expect(page.locator('.study-head')).toContainText('2 /');
   });
 
   test('un QCM montre la réponse et un feedback non punitif', async ({ page }) => {
