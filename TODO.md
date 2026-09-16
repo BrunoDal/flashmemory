@@ -4,7 +4,7 @@ Les priorités P1 « sélection de session quotidienne », « sessions persistan
 
 ## NOW
 
-- Maintenir les 3250 faits indépendants actuels et enrichir progressivement le catalogue par lots éditoriaux réellement distincts. Chaque ajout doit fournir un `factId`, une provenance structurée et approuvée, puis passer `npm run validate-content` ; les variantes de rappel et les doublons ne sont pas comptés comme de nouvelles questions.
+- Maintenir les 3280 faits indépendants actuels et enrichir progressivement le catalogue par lots éditoriaux réellement distincts. Chaque ajout doit fournir un `factId`, une provenance structurée et approuvée, puis passer `npm run validate-content` ; les variantes de rappel et les doublons ne sont pas comptés comme de nouvelles questions.
 - Étendre les parcours Playwright de la PWA à la mise à jour du service worker ; le manifeste, l’icône et l’enregistrement au bon périmètre sont désormais couverts.
 - Tester le parcours PWA offline sur Chrome/Android et Safari iOS (installation, fermeture, réouverture et mise à jour avec CTA).
 - Mesurer un chargement progressif du catalogue par lots ou thèmes avant de le mettre en œuvre : il doit préserver la sélection de session, la disponibilité hors connexion et les services synchrones actuels.

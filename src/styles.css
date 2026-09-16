@@ -66,6 +66,25 @@ body {
     var(--canvas);
 }
 
+.skip-link {
+  background: var(--selected-control);
+  border-radius: 0 0 10px 10px;
+  color: var(--selected-control-ink);
+  left: 50%;
+  padding: 10px 14px;
+  position: fixed;
+  top: -60px;
+  transform: translateX(-50%);
+  transition: top .18s ease;
+  z-index: 10;
+}
+
+.skip-link:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  top: 0;
+}
+
 button,
 input,
 select {

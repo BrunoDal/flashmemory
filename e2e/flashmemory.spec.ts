@@ -261,6 +261,15 @@ test.describe('parcours persistants Flashmemory', () => {
     await expect(page.locator('.study-head')).toContainText('2 /');
   });
 
+  test('un lien d’évitement donne accès directement au contenu principal', async ({ page }) => {
+    await createFirstProfile(page, 'Accès direct');
+    const skipLink = page.getByRole('link', { name: 'Aller au contenu' });
+    await page.keyboard.press('Tab');
+    await expect(skipLink).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect.poll(() => page.evaluate(() => document.activeElement?.id)).toBe('main-content');
+  });
+
   test('un QCM montre la réponse et un feedback non punitif', async ({ page }) => {
     // Keep the session seeds deterministic, but do not couple this scenario to
     // one particular question's position as the verified catalogue grows.
