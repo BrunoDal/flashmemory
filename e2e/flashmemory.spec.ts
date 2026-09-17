@@ -272,6 +272,21 @@ test.describe('parcours persistants Flashmemory', () => {
     await expect.poll(() => page.evaluate(() => document.activeElement?.id)).toBe('main-content');
   });
 
+  test('le détail Explorer gère le focus comme une boîte de dialogue', async ({ page }) => {
+    await createFirstProfile(page, 'Détail accessible');
+    await page.getByRole('button', { name: /Quitter/ }).click();
+    await page.getByRole('button', { name: 'Explorer' }).click();
+    const card = page.locator('.explore-card-trigger').first();
+    await card.click();
+
+    const dialog = page.getByRole('dialog', { name: 'Détail de la question' });
+    await expect(dialog).toBeVisible();
+    await expect(page.locator('#explore-detail-title')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(card).toBeFocused();
+  });
+
   test('le parcours conserve son reflow à 320 pixels CSS', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 844 });
     await createFirstProfile(page, 'Reflow');

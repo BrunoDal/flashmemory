@@ -1,6 +1,6 @@
 # Flashmemory
 
-Flashmemory est une PWA de culture générale fondée sur le rappel actif et la répétition espacée. Son catalogue contient actuellement **3312 faits/questions éditoriaux** répartis dans les 28 thèmes de l’application, avec des flashcards, QCM et vrais/faux. Chaque carte possède un `factId` stable et une provenance structurée (source, URL, licence, date et méthode de contrôle), visible après la réponse ou dans l’explorateur. L’interface distingue les sources approuvées des pistes éditoriales de contrôle des cartes historiques. Le catalogue, les profils et la progression restent sur l’appareil : la session quotidienne fonctionne hors ligne.
+Flashmemory est une PWA de culture générale fondée sur le rappel actif et la répétition espacée. Son catalogue contient actuellement **3334 faits/questions éditoriaux** répartis dans les 28 thèmes de l’application, avec des flashcards, QCM et vrais/faux. Chaque carte possède un `factId` stable et une provenance structurée (source, URL, licence, date et méthode de contrôle), visible après la réponse ou dans l’explorateur. L’interface distingue les sources approuvées des pistes éditoriales de contrôle des cartes historiques. Le catalogue, les profils et la progression restent sur l’appareil : la session quotidienne fonctionne hors ligne.
 
 Le service worker précache le shell, met en cache à l’exécution les assets statiques de même origine et utilise une stratégie réseau-avec-repli-cache uniquement pour les navigations. Les anciennes caches sont supprimées à l’activation d’une nouvelle version. Une mise à jour détectée est proposée avec le bouton **Recharger** afin de ne pas interrompre une session ; l’activation n’efface jamais IndexedDB.
 
@@ -21,7 +21,7 @@ npm run lint
 npm run build
 ```
 
-La validation du catalogue charge les 3218 fiches avec le runtime TypeScript
+La validation du catalogue charge les 3334 fiches avec le runtime TypeScript
 Node, vérifie les réponses de QCM, les réponses vrai/faux, les IDs, les
 `factId`, la provenance approuvée et les positions correctes. Elle échoue sur
 les doublons d’identité, les formulations quasi identiques ou une provenance
@@ -29,6 +29,7 @@ incomplète. Aucun volume artificiel n’est compté : une extension doit apport
 un nouveau fait, une source vérifiable et une fiche éditoriale distincte.
 
 Limite actuelle : 286 fiches héritées indiquent encore une piste de contrôle. Une première tranche de 32 fiches héritées pointe désormais vers une source institutionnelle directe (NASA, NIST, CERN, W3C, OpenStax, NOAA, UNESCO, Louvre, Élysée, Légifrance, UE, BCE, ONU ou OMS). Les lots complémentaires de 118 éléments chimiques (index NIST), 171 relations pays-capitale (Wikidata), 83 faits astronomiques (fiches NASA, après retrait d’un recouvrement), 90 faits de biologie (OpenStax Biology 2e), 99 dates d’admission à l’ONU (répertoire ONU, avec disclaimer de vérification manuelle), 101 faits de standards web/réseau (RFC IETF et Unicode, avec sections citées), 99 faits de physique (OpenStax College Physics 2e, CC BY 4.0), 96 faits de chimie (OpenStax Chemistry 2e, CC BY 4.0), 90 faits d’économie (OpenStax Principles of Economics 3e, CC BY-NC-SA 4.0, après retrait de quatre recouvrements), 93 faits de psychologie (OpenStax Psychology 2e, CC BY 4.0, sans conseil clinique, après retrait de deux recouvrements), 89 faits de sociologie (OpenStax Introduction to Sociology 3e, CC BY 4.0, après retrait d’un recouvrement), 99 faits d’histoire (OpenStax World History, CC BY-NC-SA 4.0, après retrait d’un recouvrement), 120 faits de mathématiques (OpenStax Algebra and Trigonometry 2e, CC BY 4.0), 101 faits de statistiques (OpenStax Introductory Statistics 2e, CC BY 4.0, intégrés au thème Mathématiques après retrait de huit recouvrements), 93 faits d’anatomie-physiologie (OpenStax Anatomy and Physiology 2e, CC BY 4.0, intégrés à Biologie après retrait de quatorze recouvrements, sans conseil clinique), 125 faits de sciences de la Terre (USGS, domaine public, intégrés à Sciences après retrait d’un recouvrement et sans affirmation climatique ou politique temporelle), 113 faits d’appréciation musicale (OpenStax-CNX, CC BY 4.0, après revue sans recouvrement avec Musique/Arts), 91 faits d’histoire de l’art (Humanities LibreTexts, CC BY-NC-SA 4.0, après retrait de deux recouvrements avec Histoire) et 90 faits de littérature (Introduction to Literature de Lumen, Humanities LibreTexts, domaine public indiqué dans les métadonnées, sans recouvrement avec Littérature/Langues/Arts) sont vérifiés séparément. Les nouveaux lots doivent être ajoutés comme modules sourcés et validés, sans compter de simples variantes de formulation.
+Le lot complémentaire de 22 faits sur le mouvement olympique est vérifié sur les pages officielles du Comité International Olympique, avec des cartes distinctes sur sa gouvernance, ses symboles, ses cérémonies, ses Jeux d’hiver et ses Jeux de la Jeunesse.
 Les fiches restantes ne fournissent qu’un contrôle éditorial et une URL de
 recherche Wikipédia, pas encore une citation externe ligne par ligne. Cette
 provenance est volontairement transparente ; elle ne
@@ -96,7 +97,8 @@ La suite `e2e/flashmemory.spec.ts` vérifie le premier lancement (création de p
 réponse puis reprise exacte après rechargement), l’isolation de la progression entre
 deux profils, une session utilisable après passage hors connexion, les réglages, les
 raccourcis `Espace` et `1` à `4`, le lien d’évitement vers le contenu, le reflow
-sans défilement horizontal à 320 px, le feedback d’un QCM, ainsi que le manifeste,
+sans défilement horizontal à 320 px, la boîte de dialogue de détail Explorer au
+clavier, le feedback d’un QCM, ainsi que le manifeste,
 l’icône et l’enregistrement du service worker. Chaque test utilise un contexte
 navigateur Playwright distinct, donc son IndexedDB est isolé. Le serveur Vite est
 lancé automatiquement par la configuration Playwright.
