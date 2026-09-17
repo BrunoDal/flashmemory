@@ -298,6 +298,11 @@ select:focus-visible {
   white-space: nowrap;
 }
 
+.question-meta > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .question-meta span:last-child {
   color: var(--muted);
   letter-spacing: .06em;
@@ -404,6 +409,10 @@ select:focus-visible {
 
 .bottom-nav button b {
   line-height: 1;
+}
+
+.bottom-nav button small {
+  font-size: .75rem;
 }
 
 .onboarding {
@@ -745,7 +754,7 @@ html[data-theme='dark'] .progress {
 }
 
 .rating small {
-  font-size: .73rem;
+  font-size: .78rem;
   line-height: 1.2;
   margin: 0;
 }
@@ -959,7 +968,7 @@ html[data-theme='dark'] .rating.easy {
   }
 
   .question-card.is-revealed .rating small {
-    font-size: .72rem;
+    font-size: .75rem;
   }
 }
 

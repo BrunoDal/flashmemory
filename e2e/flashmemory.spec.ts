@@ -272,6 +272,21 @@ test.describe('parcours persistants Flashmemory', () => {
     await expect.poll(() => page.evaluate(() => document.activeElement?.id)).toBe('main-content');
   });
 
+  test('le parcours conserve son reflow à 320 pixels CSS', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 844 });
+    await createFirstProfile(page, 'Reflow');
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+
+    const reveal = page.getByRole('button', { name: /Afficher la réponse/ });
+    if (await reveal.isVisible()) {
+      await reveal.click();
+    } else {
+      await page.locator('.choices button').first().click();
+    }
+    await expect(page.getByText('Réponse', { exact: true })).toBeVisible();
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+
   test('un QCM montre la réponse et un feedback non punitif', async ({ page }) => {
     // Keep the session seeds deterministic, but do not couple this scenario to
     // one particular question's position as the verified catalogue grows.

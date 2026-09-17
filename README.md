@@ -95,7 +95,8 @@ npm run e2e
 La suite `e2e/flashmemory.spec.ts` vérifie le premier lancement (création de profil,
 réponse puis reprise exacte après rechargement), l’isolation de la progression entre
 deux profils, une session utilisable après passage hors connexion, les réglages, les
-raccourcis `Espace` et `1` à `4`, le feedback d’un QCM, ainsi que le manifeste,
+raccourcis `Espace` et `1` à `4`, le lien d’évitement vers le contenu, le reflow
+sans défilement horizontal à 320 px, le feedback d’un QCM, ainsi que le manifeste,
 l’icône et l’enregistrement du service worker. Chaque test utilise un contexte
 navigateur Playwright distinct, donc son IndexedDB est isolé. Le serveur Vite est
 lancé automatiquement par la configuration Playwright.
